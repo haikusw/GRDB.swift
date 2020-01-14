@@ -61,7 +61,7 @@ class ValueObservationQueryInterfaceRequestTests: GRDBTestCase {
             .including(all: Parent.children.orderByPrimaryKey())
             .orderByPrimaryKey()
             .asRequest(of: Row.self)
-        let observation = request.observationForFirst()
+        let observation = ValueObservation.tracking(value: request.fetchOne(_:))
         let observer = try observation.start(in: dbQueue) { row in
             results.append(row)
             notificationExpectation.fulfill()
@@ -96,7 +96,7 @@ class ValueObservationQueryInterfaceRequestTests: GRDBTestCase {
             .including(all: Parent.children.orderByPrimaryKey())
             .orderByPrimaryKey()
             .asRequest(of: Row.self)
-        let observation = request.observationForAll()
+        let observation = ValueObservation.tracking(value: request.fetchAll(_:))
         let observer = try observation.start(in: dbQueue) { rows in
             results.append(rows)
             notificationExpectation.fulfill()
@@ -138,7 +138,7 @@ class ValueObservationQueryInterfaceRequestTests: GRDBTestCase {
             .including(all: Parent.children.orderByPrimaryKey())
             .orderByPrimaryKey()
             .asRequest(of: ParentInfo.self)
-        let observation = request.observationForFirst()
+        let observation = ValueObservation.tracking(value: request.fetchOne(_:))
         let observer = try observation.start(in: dbQueue) { parentInfo in
             results.append(parentInfo)
             notificationExpectation.fulfill()
@@ -175,7 +175,7 @@ class ValueObservationQueryInterfaceRequestTests: GRDBTestCase {
             .including(all: Parent.children.orderByPrimaryKey())
             .orderByPrimaryKey()
             .asRequest(of: ParentInfo.self)
-        let observation = request.observationForAll()
+        let observation = ValueObservation.tracking(value: request.fetchAll(_:))
         let observer = try observation.start(in: dbQueue) { parentInfos in
             results.append(parentInfos)
             notificationExpectation.fulfill()

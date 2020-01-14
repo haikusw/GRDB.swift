@@ -355,13 +355,16 @@ extension DatabaseWriter {
                 do {
                     try unsafeReentrantWrite { db in
                         observer.notificationQueue = DispatchQueue.main
-                        observer.baseRegion = try observation.baseRegion(db).ignoringViews(db)
+                        observer.baseRegion = try observation
+                            .baseRegion(db)
+                            .ignoringViews(db)
+                            .ignoringInternalSQLiteTables()
                         observer.reducer = try observation.makeReducer(db)
                         
                         // Initial value & selected region
                         let fetchedValue: Reducer.Fetched
                         if observation.observesSelectedRegion {
-                            (fetchedValue, observer.selectedRegion) = try db.recordingSelectedRegion {
+                            (fetchedValue, observer.selectedRegion) = try db.recordingObservedRegion {
                                 try observer.reducer.fetch(db, requiringWriteAccess: requiresWriteAccess)
                             }
                         } else {
@@ -382,13 +385,16 @@ extension DatabaseWriter {
                 asyncWriteWithoutTransaction { db in
                     do {
                         observer.notificationQueue = DispatchQueue.main
-                        observer.baseRegion = try observation.baseRegion(db).ignoringViews(db)
+                        observer.baseRegion = try observation
+                            .baseRegion(db)
+                            .ignoringViews(db)
+                            .ignoringInternalSQLiteTables()
                         observer.reducer = try observation.makeReducer(db)
                         
                         // Initial value & selected region
                         let fetchedValue: Reducer.Fetched
                         if observation.observesSelectedRegion {
-                            (fetchedValue, observer.selectedRegion) = try db.recordingSelectedRegion {
+                            (fetchedValue, observer.selectedRegion) = try db.recordingObservedRegion {
                                 try observer.reducer.fetch(db, requiringWriteAccess: requiresWriteAccess)
                             }
                         } else {
@@ -414,14 +420,17 @@ extension DatabaseWriter {
             asyncWriteWithoutTransaction { db in
                 do {
                     observer.notificationQueue = queue
-                    observer.baseRegion = try observation.baseRegion(db).ignoringViews(db)
+                    observer.baseRegion = try observation
+                        .baseRegion(db)
+                        .ignoringViews(db)
+                        .ignoringInternalSQLiteTables()
                     observer.reducer = try observation.makeReducer(db)
                     
                     // Initial value & selected region
                     if startImmediately {
                         let fetchedValue: Reducer.Fetched
                         if observation.observesSelectedRegion {
-                            (fetchedValue, observer.selectedRegion) = try db.recordingSelectedRegion {
+                            (fetchedValue, observer.selectedRegion) = try db.recordingObservedRegion {
                                 try observer.reducer.fetch(db, requiringWriteAccess: requiresWriteAccess)
                             }
                         } else {
@@ -433,7 +442,7 @@ extension DatabaseWriter {
                             }
                         }
                     } else if observation.observesSelectedRegion {
-                        (_, observer.selectedRegion) = try db.recordingSelectedRegion {
+                        (_, observer.selectedRegion) = try db.recordingObservedRegion {
                             try observer.reducer.fetch(db, requiringWriteAccess: requiresWriteAccess)
                         }
                     }
@@ -469,14 +478,17 @@ extension DatabaseWriter {
                 do {
                     try unsafeReentrantWrite { db in
                         observer.notificationQueue = nil
-                        observer.baseRegion = try observation.baseRegion(db).ignoringViews(db)
+                        observer.baseRegion = try observation
+                            .baseRegion(db)
+                            .ignoringViews(db)
+                            .ignoringInternalSQLiteTables()
                         observer.reducer = try observation.makeReducer(db)
                         
                         // Initial value & selected region
                         if startImmediately {
                             let fetchedValue: Reducer.Fetched
                             if observation.observesSelectedRegion {
-                                (fetchedValue, observer.selectedRegion) = try db.recordingSelectedRegion {
+                                (fetchedValue, observer.selectedRegion) = try db.recordingObservedRegion {
                                     try observer.reducer.fetch(db, requiringWriteAccess: requiresWriteAccess)
                                 }
                             } else {
@@ -486,7 +498,7 @@ extension DatabaseWriter {
                                 startValue = value
                             }
                         } else if observation.observesSelectedRegion {
-                            (_, observer.selectedRegion) = try db.recordingSelectedRegion {
+                            (_, observer.selectedRegion) = try db.recordingObservedRegion {
                                 try observer.reducer.fetch(db, requiringWriteAccess: requiresWriteAccess)
                             }
                         }
@@ -504,12 +516,15 @@ extension DatabaseWriter {
                 asyncWriteWithoutTransaction { db in
                     do {
                         observer.notificationQueue = nil
-                        observer.baseRegion = try observation.baseRegion(db).ignoringViews(db)
+                        observer.baseRegion = try observation
+                            .baseRegion(db)
+                            .ignoringViews(db)
+                            .ignoringInternalSQLiteTables()
                         observer.reducer = try observation.makeReducer(db)
                         
                         // Selected region
                         if observation.observesSelectedRegion {
-                            (_, observer.selectedRegion) = try db.recordingSelectedRegion {
+                            (_, observer.selectedRegion) = try db.recordingObservedRegion {
                                 try observer.reducer.fetch(db, requiringWriteAccess: requiresWriteAccess)
                             }
                         }

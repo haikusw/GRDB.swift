@@ -86,7 +86,9 @@ extension DatabaseRegionObservation {
         // Use unsafeReentrantWrite so that observation can start from any
         // dispatch queue.
         return try dbWriter.unsafeReentrantWrite { db -> TransactionObserver in
-            let region = try observedRegion(db).ignoringViews(db)
+            let region = try observedRegion(db)
+                .ignoringViews(db)
+                .ignoringInternalSQLiteTables()
             let observer = DatabaseRegionObserver(region: region, onChange: onChange)
             db.add(transactionObserver: observer, extent: extent)
             return observer

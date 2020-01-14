@@ -601,6 +601,15 @@ public final class Database {
         return try (block(), _selectedRegion)
     }
     
+    func recordingObservedRegion<T>(_ block: () throws -> T) throws -> (T, DatabaseRegion) {
+        assert(self._isRecordingSelectedRegion == false)
+        let (value, region) = try recordingSelectedRegion(block)
+        
+        // Let's remove views, because SQLite does not notify changes that
+        // happen in views.
+        return try (value, region.ignoringViews(self))
+    }
+    
     // MARK: - Checkpoints
     
     func checkpoint(_ kind: Database.CheckpointMode) throws {

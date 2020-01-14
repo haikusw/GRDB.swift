@@ -35,9 +35,10 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
         var results: [[Name]] = []
         let notificationExpectation = expectation(description: "notification")
         notificationExpectation.assertForOverFulfill = true
-        notificationExpectation.expectedFulfillmentCount = 4
+        notificationExpectation.expectedFulfillmentCount = 5
         
-        let observation = SQLRequest<Name>(sql: "SELECT name FROM t ORDER BY id").observationForAll()
+        let request = SQLRequest<Name>(sql: "SELECT name FROM t ORDER BY id")
+        let observation = ValueObservation.tracking(value: request.fetchAll(_:))
         let observer = try observation.start(in: dbQueue) { names in
             results.append(names)
             notificationExpectation.fulfill()
@@ -59,6 +60,7 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
             XCTAssertEqual(results.map { $0.map { $0.rawValue }}, [
                 [],
                 ["foo"],
+                ["foo"],
                 ["foo", "bar"],
                 ["bar"]])
         }
@@ -71,9 +73,10 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
         var results: [Name?] = []
         let notificationExpectation = expectation(description: "notification")
         notificationExpectation.assertForOverFulfill = true
-        notificationExpectation.expectedFulfillmentCount = 7
+        notificationExpectation.expectedFulfillmentCount = 10
         
-        let observation = SQLRequest<Name>(sql: "SELECT name FROM t ORDER BY id DESC").observationForFirst()
+        let request = SQLRequest<Name>(sql: "SELECT name FROM t ORDER BY id DESC")
+        let observation = ValueObservation.tracking(value: request.fetchOne(_:))
         let observer = try observation.start(in: dbQueue) { name in
             results.append(name)
             notificationExpectation.fulfill()
@@ -100,9 +103,12 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
             XCTAssertEqual(results.map { $0.map { $0.rawValue }}, [
                 nil,
                 "foo",
+                "foo",
                 "bar",
                 nil,
                 "baz",
+                nil,
+                nil,
                 nil,
                 "qux"])
         }
@@ -115,9 +121,10 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
         var results: [[Name?]] = []
         let notificationExpectation = expectation(description: "notification")
         notificationExpectation.assertForOverFulfill = true
-        notificationExpectation.expectedFulfillmentCount = 4
+        notificationExpectation.expectedFulfillmentCount = 5
         
-        let observation = SQLRequest<Name?>(sql: "SELECT name FROM t ORDER BY id").observationForAll()
+        let request = SQLRequest<Name?>(sql: "SELECT name FROM t ORDER BY id")
+        let observation = ValueObservation.tracking(value: request.fetchAll(_:))
         let observer = try observation.start(in: dbQueue) { names in
             results.append(names)
             notificationExpectation.fulfill()
@@ -139,6 +146,7 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
             XCTAssertEqual(results.map { $0.map { $0?.rawValue }}, [
                 [],
                 ["foo"],
+                ["foo"],
                 ["foo", nil],
                 [nil]])
         }
@@ -151,9 +159,10 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
         var results: [Name?] = []
         let notificationExpectation = expectation(description: "notification")
         notificationExpectation.assertForOverFulfill = true
-        notificationExpectation.expectedFulfillmentCount = 7
+        notificationExpectation.expectedFulfillmentCount = 10
         
-        let observation = SQLRequest<Name?>(sql: "SELECT name FROM t ORDER BY id DESC").observationForFirst()
+        let request = SQLRequest<Name?>(sql: "SELECT name FROM t ORDER BY id DESC")
+        let observation = ValueObservation.tracking(value: request.fetchOne(_:))
         let observer = try observation.start(in: dbQueue) { name in
             results.append(name)
             notificationExpectation.fulfill()
@@ -180,9 +189,12 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
             XCTAssertEqual(results.map { $0.map { $0.rawValue }}, [
                 nil,
                 "foo",
+                "foo",
                 "bar",
                 nil,
                 "baz",
+                nil,
+                nil,
                 nil,
                 "qux"])
         }
@@ -200,7 +212,7 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
         var results: [[Name]] = []
         let notificationExpectation = expectation(description: "notification")
         notificationExpectation.assertForOverFulfill = true
-        notificationExpectation.expectedFulfillmentCount = 4
+        notificationExpectation.expectedFulfillmentCount = 5
         
         // Test that view v is included in the request region
         let request = SQLRequest<Name>(sql: "SELECT name FROM v ORDER BY id")
@@ -212,12 +224,12 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
         // Test that view v is not included in the observed region.
         // This optimization helps observation of views that feed from a
         // single table.
-        let observation = request.observationForAll()
+        let observation = ValueObservation.tracking(value: request.fetchAll(_:))
         let observer = try observation.start(in: dbQueue) { names in
             results.append(names)
             notificationExpectation.fulfill()
         }
-        let token = observer as! ValueObserverToken<ValueReducers.AllValues<Name>> // Non-public implementation detail
+        let token = observer as! ValueObserverToken<ValueReducers.Fetch<[Name]>> // Non-public implementation detail
         XCTAssertEqual(token.observer.observedRegion.description, "t(id,name)") // view is not tracked
         try withExtendedLifetime(observer) {
             // Test view observation
@@ -236,6 +248,7 @@ class ValueObservationDatabaseValueConvertibleTests: GRDBTestCase {
             waitForExpectations(timeout: 1, handler: nil)
             XCTAssertEqual(results.map { $0.map { $0.rawValue }}, [
                 [],
+                ["foo"],
                 ["foo"],
                 ["foo", "bar"],
                 ["bar"]])

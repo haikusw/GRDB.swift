@@ -5532,7 +5532,6 @@ Changes are only notified after they have been committed in the database. No ins
 - **[ValueObservation Usage](#valueobservation-usage)**
 - [ValueObservation.tracking(value:)](#valueobservationtrackingvalue)
 - [ValueObservation.tracking(_:fetch:)](#valueobservationtracking_fetch)
-- [observationForCount, observationForAll, observationForFirst](#observationforcount-observationforall-observationforfirst)
 - [ValueObservation Transformations](#valueobservation-transformations): [map](#valueobservationmap), [compactMap](#valueobservationcompactmap), ...
 - [ValueObservation Error Handling](#valueobservation-error-handling)
 - [ValueObservation Options](#valueobservation-options)
@@ -5681,7 +5680,24 @@ It accepts two arguments:
 
 Changes that happen outside of the observed requests are ignored, so make sure you fully cover the database region you want to observe. This is the price you pay for the optimization.
 
-Let's give a practical example, and observe the "Hall of Fame":
+For example:
+
+```swift
+// Optimized observation for a single player
+let request = Player.filter(key: 42)
+let observation = ValueObservation.tracking(request, fetch: { db in
+    try request.fetchOne(db)
+})
+
+observer = observation.start(
+    in: dbQueue,
+    onError: { error in ... },
+    onChange: { (player: Player?) in
+        print("Fresh player: \(player)")
+    })
+```
+
+Let's give another slightly more complex example, and observe the "Hall of Fame":
 
 ```swift
 struct HallOfFame {
@@ -5713,30 +5729,6 @@ let observation = ValueObservation.tracking(Player.all(), fetch: { db in
 ```
 
 > :point_up: **Note**: the initial parameter of `ValueObservation.tracking(_:fetch:)` can be fed with requests, and generally speaking, values that adopt the [DatabaseRegionConvertible] protocol.
-
-
-### observationForCount, observationForAll, observationForFirst
-
-Given a [request](#requests), even a [custom request](#custom-requests), you can observe its number of results, all results, or the first one:
-
-```swift
-request.observationForCount()
-request.observationForAll()
-request.observationForFirst()
-```
-
-Those observations are equivalent to the following ones, defined with [`ValueObservation.tracking(value:)`](#valueobservationtrackingvalue):
-
-```swift
-ValueObservation.tracking { db in try request.fetchCount(db) }
-ValueObservation.tracking { db in try request.fetchAll(db) }
-ValueObservation.tracking { db in try request.fetchOne(db) }
-```
-
-Yet they are **optimized**:
-
-- They perform a filtering of consecutive identical values, based on raw database values, so that you are not notified of database changes that do not impact the result of the request.
-- They can perform better when you use a [database pool](#database-pools), and the fetch is slow.
 
 
 ### ValueObservation Transformations
@@ -5811,8 +5803,6 @@ let observer = observation.start(
         print("Player: \(player)")
     })
 ```
-
-> :point_up: **Note**: the observations returned by the [observationForCount, observationForAll, observationForFirst](#observationforcount-observationforall-observationforfirst) methods already perform a similar filtering, based on raw database values.
 
 
 #### ValueObservation.combine(...)

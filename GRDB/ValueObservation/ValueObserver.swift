@@ -71,7 +71,7 @@ class ValueObserver<Reducer: ValueReducer>: TransactionObserver {
                     var fetchedValue: Reducer.Fetched!
                     var selectedRegion: DatabaseRegion!
                     try db.inTransaction {
-                        let (_fetchedValue, _selectedRegion) = try db.recordingSelectedRegion {
+                        let (_fetchedValue, _selectedRegion) = try db.recordingObservedRegion {
                             try reducer.fetch(db)
                         }
                         fetchedValue = _fetchedValue
@@ -99,7 +99,7 @@ class ValueObserver<Reducer: ValueReducer>: TransactionObserver {
                 // Synchronous read-only fetch
                 do {
                     let (fetchedValue, selectedRegion) = try db.readOnly {
-                        try db.recordingSelectedRegion {
+                        try db.recordingObservedRegion {
                             try reducer.fetch(db)
                         }
                     }

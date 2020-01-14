@@ -373,7 +373,7 @@ class ValueObservationReducerTests: GRDBTestCase {
             notificationExpectation.expectedFulfillmentCount = 3
             
             struct T: TableRecord { }
-            let observation = T.observationForCount().map { "\($0)" }
+            let observation = ValueObservation.tracking(value: T.fetchCount(_:)).map { "\($0)" }
             let observer = try observation.start(in: dbWriter) { count in
                 counts.append(count)
                 notificationExpectation.fulfill()

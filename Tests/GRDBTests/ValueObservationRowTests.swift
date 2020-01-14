@@ -18,9 +18,10 @@ class ValueObservationRowTests: GRDBTestCase {
         var results: [[Row]] = []
         let notificationExpectation = expectation(description: "notification")
         notificationExpectation.assertForOverFulfill = true
-        notificationExpectation.expectedFulfillmentCount = 4
+        notificationExpectation.expectedFulfillmentCount = 5
         
-        let observation = SQLRequest<Row>(sql: "SELECT * FROM t ORDER BY id").observationForAll()
+        let request = SQLRequest<Row>(sql: "SELECT * FROM t ORDER BY id")
+        let observation = ValueObservation.tracking(value: request.fetchAll(_:))
         let observer = try observation.start(in: dbQueue) { rows in
             results.append(rows)
             notificationExpectation.fulfill()
@@ -42,6 +43,7 @@ class ValueObservationRowTests: GRDBTestCase {
             XCTAssertEqual(results, [
                 [],
                 [["id":1, "name":"foo"]],
+                [["id":1, "name":"foo"]],
                 [["id":1, "name":"foo"], ["id":2, "name":"bar"]],
                 [["id":2, "name":"bar"]]])
         }
@@ -54,9 +56,10 @@ class ValueObservationRowTests: GRDBTestCase {
         var results: [Row?] = []
         let notificationExpectation = expectation(description: "notification")
         notificationExpectation.assertForOverFulfill = true
-        notificationExpectation.expectedFulfillmentCount = 4
+        notificationExpectation.expectedFulfillmentCount = 5
         
-        let observation = SQLRequest<Row>(sql: "SELECT * FROM t ORDER BY id DESC").observationForFirst()
+        let request = SQLRequest<Row>(sql: "SELECT * FROM t ORDER BY id DESC")
+        let observation = ValueObservation.tracking(value: request.fetchOne(_:))
         let observer = try observation.start(in: dbQueue) { row in
             results.append(row)
             notificationExpectation.fulfill()
@@ -78,6 +81,7 @@ class ValueObservationRowTests: GRDBTestCase {
         waitForExpectations(timeout: 1, handler: nil)
         XCTAssertEqual(results, [
             nil,
+            ["id":1, "name":"foo"],
             ["id":1, "name":"foo"],
             ["id":2, "name":"bar"],
             nil])
