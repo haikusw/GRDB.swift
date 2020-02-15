@@ -22,10 +22,13 @@ class ValueObservationCountTests: GRDBTestCase {
         
         struct T: TableRecord { }
         let observation = ValueObservation.tracking(value: T.fetchCount(_:))
-        let observer = try observation.start(in: dbQueue) { count in
-            counts.append(count)
-            notificationExpectation.fulfill()
-        }
+        let observer = observation.start(
+            in: dbQueue,
+            onError: { error in XCTFail("Unexpected error: \(error)") },
+            onChange: { count in
+                counts.append(count)
+                notificationExpectation.fulfill()
+        })
         try withExtendedLifetime(observer) {
             try dbQueue.inDatabase { db in
                 try db.execute(sql: "INSERT INTO t DEFAULT VALUES") // +1

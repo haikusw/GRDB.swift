@@ -248,3 +248,11 @@ extension TableRecord {
         ValueObservation<ValueReducers.RemoveDuplicates<ValueReducers.Fetch<Int>>>
     { preconditionFailure() }
 }
+
+extension ValueObservation where Reducer: ValueReducer {
+    @available(*, unavailable, message: "Use start(in:onError:onChange:) instead")
+    public func start(
+        in reader: DatabaseReader,
+        onChange: @escaping (Reducer.Value) -> Void) throws -> TransactionObserver
+    { preconditionFailure() }
+}

@@ -1,3 +1,8 @@
+## GRDB 5
+
+- [ ] ValueObservation cancellation
+- [ ] ValueObservation scheduling simplification
+
 ## Cleanup
 
 - [ ] SQLCipher: sqlite3_rekey is discouraged (https://github.com/ccgus/fmdb/issues/547#issuecomment-259219320)

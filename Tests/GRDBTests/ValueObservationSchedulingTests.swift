@@ -27,11 +27,14 @@ class ValueObservationSchedulingTests: GRDBTestCase {
             let observation = ValueObservation.tracking(DatabaseRegion.fullDatabase, fetch: {
                 try Int.fetchOne($0, sql: "SELECT COUNT(*) FROM t")!
             })
-            let observer = try observation.start(in: dbWriter) { count in
-                XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
-                counts.append(count)
-                notificationExpectation.fulfill()
-            }
+            let observer = observation.start(
+                in: dbWriter,
+                onError: { error in XCTFail("Unexpected error: \(error)") },
+                onChange: { count in
+                    XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
+                    counts.append(count)
+                    notificationExpectation.fulfill()
+            })
             // .mainQueue scheduling: initial value MUST be synchronously
             // dispatched when observation is started from the main queue
             XCTAssertEqual(counts, [0])
@@ -69,11 +72,14 @@ class ValueObservationSchedulingTests: GRDBTestCase {
             })
             var observer: TransactionObserver?
             DispatchQueue.global(qos: .default).async {
-                observer = try! observation.start(in: dbWriter) { count in
-                    XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
-                    counts.append(count)
-                    notificationExpectation.fulfill()
-                }
+                observer = observation.start(
+                    in: dbWriter,
+                    onError: { error in XCTFail("Unexpected error: \(error)") },
+                    onChange: { count in
+                        XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
+                        counts.append(count)
+                        notificationExpectation.fulfill()
+                })
                 try! dbWriter.write {
                     try $0.execute(sql: "INSERT INTO t DEFAULT VALUES")
                 }
@@ -159,11 +165,14 @@ class ValueObservationSchedulingTests: GRDBTestCase {
             })
             observation.scheduling = .async(onQueue: queue, startImmediately: true)
             
-            let observer = try observation.start(in: dbWriter) { count in
-                XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
-                counts.append(count)
-                notificationExpectation.fulfill()
-            }
+            let observer = observation.start(
+                in: dbWriter,
+                onError: { error in XCTFail("Unexpected error: \(error)") },
+                onChange: { count in
+                    XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
+                    counts.append(count)
+                    notificationExpectation.fulfill()
+            })
             try withExtendedLifetime(observer) {
                 try dbWriter.write {
                     try $0.execute(sql: "INSERT INTO t DEFAULT VALUES")
@@ -197,11 +206,14 @@ class ValueObservationSchedulingTests: GRDBTestCase {
             })
             observation.scheduling = .async(onQueue: queue, startImmediately: false)
             
-            let observer = try observation.start(in: dbWriter) { count in
-                XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
-                counts.append(count)
-                notificationExpectation.fulfill()
-            }
+            let observer = observation.start(
+                in: dbWriter,
+                onError: { error in XCTFail("Unexpected error: \(error)") },
+                onChange: { count in
+                    XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
+                    counts.append(count)
+                    notificationExpectation.fulfill()
+            })
             try withExtendedLifetime(observer) {
                 try dbWriter.write {
                     try $0.execute(sql: "INSERT INTO t DEFAULT VALUES")
@@ -277,14 +289,17 @@ class ValueObservationSchedulingTests: GRDBTestCase {
             })
             observation.scheduling = .unsafe(startImmediately: true)
             
-            let observer = try observation.start(in: dbWriter) { count in
-                if counts.isEmpty {
-                    // require main queue on first element
-                    XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
-                }
-                counts.append(count)
-                notificationExpectation.fulfill()
-            }
+            let observer = observation.start(
+                in: dbWriter,
+                onError: { error in XCTFail("Unexpected error: \(error)") },
+                onChange: { count in
+                    if counts.isEmpty {
+                        // require main queue on first element
+                        XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
+                    }
+                    counts.append(count)
+                    notificationExpectation.fulfill()
+            })
             try withExtendedLifetime(observer) {
                 try dbWriter.write {
                     try $0.execute(sql: "INSERT INTO t DEFAULT VALUES")
@@ -319,14 +334,17 @@ class ValueObservationSchedulingTests: GRDBTestCase {
             observation.scheduling = .unsafe(startImmediately: true)
             var observer: TransactionObserver?
             queue.async {
-                observer = try! observation.start(in: dbWriter) { count in
-                    if counts.isEmpty {
-                        // require custom queue on first notification
-                        XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
-                    }
-                    counts.append(count)
-                    notificationExpectation.fulfill()
-                }
+                observer = observation.start(
+                    in: dbWriter,
+                    onError: { error in XCTFail("Unexpected error: \(error)") },
+                    onChange: { count in
+                        if counts.isEmpty {
+                            // require custom queue on first notification
+                            XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
+                        }
+                        counts.append(count)
+                        notificationExpectation.fulfill()
+                })
                 try! dbWriter.write {
                     try $0.execute(sql: "INSERT INTO t DEFAULT VALUES")
                 }
@@ -357,10 +375,13 @@ class ValueObservationSchedulingTests: GRDBTestCase {
             })
             observation.scheduling = .unsafe(startImmediately: false)
             
-            let observer = try observation.start(in: dbWriter) { count in
-                counts.append(count)
-                notificationExpectation.fulfill()
-            }
+            let observer = observation.start(
+                in: dbWriter,
+                onError: { error in XCTFail("Unexpected error: \(error)") },
+                onChange: { count in
+                    counts.append(count)
+                    notificationExpectation.fulfill()
+            })
             try withExtendedLifetime(observer) {
                 try dbWriter.write {
                     try $0.execute(sql: "INSERT INTO t DEFAULT VALUES")

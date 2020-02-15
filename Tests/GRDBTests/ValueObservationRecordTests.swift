@@ -37,10 +37,13 @@ class ValueObservationRecordTests: GRDBTestCase {
         
         let request = SQLRequest<Player>(sql: "SELECT * FROM t ORDER BY id")
         let observation = ValueObservation.tracking(value: request.fetchAll(_:))
-        let observer = try observation.start(in: dbQueue) { players in
-            results.append(players)
-            notificationExpectation.fulfill()
-        }
+        let observer = observation.start(
+            in: dbQueue,
+            onError: { error in XCTFail("Unexpected error: \(error)") },
+            onChange: { players in
+                results.append(players)
+                notificationExpectation.fulfill()
+        })
         try withExtendedLifetime(observer) {
             try dbQueue.inDatabase { db in
                 try db.execute(sql: "INSERT INTO t (id, name) VALUES (1, 'foo')") // +1
@@ -75,10 +78,13 @@ class ValueObservationRecordTests: GRDBTestCase {
         
         let request = SQLRequest<Player>(sql: "SELECT * FROM t ORDER BY id DESC")
         let observation = ValueObservation.tracking(value: request.fetchOne(_:))
-        let observer = try observation.start(in: dbQueue) { player in
-            results.append(player)
-            notificationExpectation.fulfill()
-        }
+        let observer = observation.start(
+            in: dbQueue,
+            onError: { error in XCTFail("Unexpected error: \(error)") },
+            onChange: { player in
+                results.append(player)
+                notificationExpectation.fulfill()
+        })
         try withExtendedLifetime(observer) {
             try dbQueue.inDatabase { db in
                 try db.execute(sql: "INSERT INTO t (id, name) VALUES (1, 'foo')") // +1
