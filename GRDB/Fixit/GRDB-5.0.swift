@@ -256,3 +256,13 @@ extension ValueObservation where Reducer: ValueReducer {
         onChange: @escaping (Reducer.Value) -> Void) throws -> TransactionObserver
     { preconditionFailure() }
 }
+
+extension ValueScheduling {
+    @available(*, unavailable, message: "Use async(onQueue:) instead")
+    public static func async(onQueue: DispatchQueue, startImmediately: Bool) -> ValueScheduling
+    { preconditionFailure() }
+    
+    @available(*, unavailable, message: "Use unsafe instead")
+    public static func unsafe(startImmediately: Bool) -> ValueScheduling
+    { preconditionFailure() }
+}

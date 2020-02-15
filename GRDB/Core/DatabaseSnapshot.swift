@@ -136,19 +136,15 @@ extension DatabaseSnapshot {
                         }
                     }
                 }
-            case let .async(onQueue: queue, startImmediately: startImmediately):
-                if startImmediately {
-                    if let value = try unsafeReentrantRead(observation.fetchFirst) {
-                        queue.async {
-                            onChange(value)
-                        }
-                    }
-                }
-            case let .unsafe(startImmediately: startImmediately):
-                if startImmediately {
-                    if let value = try unsafeReentrantRead(observation.fetchFirst) {
+            case let .async(onQueue: queue):
+                if let value = try unsafeReentrantRead(observation.fetchFirst) {
+                    queue.async {
                         onChange(value)
                     }
+                }
+            case .unsafe:
+                if let value = try unsafeReentrantRead(observation.fetchFirst) {
+                    onChange(value)
                 }
             }
         } catch {

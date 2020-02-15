@@ -37,20 +37,16 @@ public enum ValueScheduling {
     case mainQueue
     
     /// All values are asychronously notified on the specified queue.
-    ///
-    /// An initial value is fetched and notified if `startImmediately`
-    /// is true.
-    case async(onQueue: DispatchQueue, startImmediately: Bool)
+    case async(onQueue: DispatchQueue)
     
     /// Values are not all notified on the same dispatch queue.
     ///
-    /// If `startImmediately` is true, an initial value is notified right upon
-    /// subscription, synchronously, on the dispatch queue which starts
-    /// the observation.
+    /// An initial value is notified right upon subscription, synchronously, on
+    /// the dispatch queue which starts the observation.
     ///
     ///     // On any queue
     ///     var observation = ValueObservation.tracking(value: Player.fetchAll)
-    ///     observation.scheduling = .unsafe(startImmediately: true)
+    ///     observation.scheduling = .unsafe
     ///     let observer = try observation.start(in: dbQueue) { players: [Player] in
     ///         print("fresh players: \(players)")
     ///     }
@@ -58,7 +54,7 @@ public enum ValueScheduling {
     ///
     /// When the database changes, other values are notified on
     /// unspecified queues.
-    case unsafe(startImmediately: Bool)
+    case unsafe
 }
 
 // MARK: - ValueObservation

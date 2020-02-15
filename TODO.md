@@ -1,7 +1,7 @@
 ## GRDB 5
 
 - [ ] ValueObservation cancellation
-- [ ] ValueObservation scheduling simplification
+- [X] ValueObservation scheduling simplification
 
 ## Cleanup
 
