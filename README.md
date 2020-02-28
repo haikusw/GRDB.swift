@@ -1136,7 +1136,7 @@ for (columnName, dbValue) in row { ... } // ("foo", 1), ("foo", 2)
         uniquingKeysWith: { (left, _) in left })
     ```
 
-See the documentation of [`Dictionary.init(_:uniquingKeysWith:)`](https://developer.apple.com/documentation/swift/dictionary/2892961-init) for more information.
+See the documentation of [`Dictionary.init(_:uniquingKeysWith:)`](https://developer.apple.com/documentation/swift/dictionary/3127165-init) for more information.
 
 
 ### Value Queries
@@ -1155,7 +1155,7 @@ try dbQueue.read { db in
 }
 
 let playerCount = try dbQueue.read { db in
-    try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM player")!
+    try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM player") ?? 0       // count or 0 if nil (see below)
 }
 ```
 
@@ -1164,8 +1164,8 @@ let playerCount = try dbQueue.read { db in
 There are many supported value types (Bool, Int, String, Date, Swift enums, etc.). See [Values](#values) for more information:
 
 ```swift
-let count = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM player")! // Int
-let urls = try URL.fetchAll(db, sql: "SELECT url FROM link")          // [URL]
+let count = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM player") ?? 0  // Int
+let urls = try URL.fetchAll(db, sql: "SELECT url FROM link")               // [URL]
 ```
 
 
